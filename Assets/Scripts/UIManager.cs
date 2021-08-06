@@ -8,18 +8,20 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     public GameObject[] droneCams;
-    public GameObject multiViewCanvas; //multi-camera canvas
+    public GameObject multiViewCanvas; // multi-camera canvas
+    public GameObject pathViewCanvas; // standard drone view camera
     public int selectedDrone = 1;
     public SteamVR_Action_Boolean switchCamLeft;
     public SteamVR_Action_Boolean switchCamRight;
     public SteamVR_Action_Boolean toggleCameraCanvas;
     public SteamVR_Input_Sources handType;
-    public TMP_Text droneInUse; //Text display drone currently in use
-    public RawImage[] camViews; //cameras mini-views
-    public Texture[] camTextures; //drone cameras textures
-    private Color[] droneColors; //colors of drones
-    public Image[] warnings; //warning images - current view and 3 mini-views
-    
+    public TMP_Text[] droneLabels; // labels for each of the drone views
+    public RawImage[] camViews; // cameras mini-views
+    public Texture[] camTextures; // drone cameras textures
+    private Color[] droneColors; // colors of drones
+    public Image[] warnings; // warning images - current view and 3 mini-views
+    public Text currentDroneLabel; // Text display drone currently in use
+
 
     private void Awake()
     {
@@ -30,15 +32,25 @@ public class UIManager : MonoBehaviour
             droneColors[i] = droneCams[i].transform.root.Find("DroneBody").gameObject.GetComponent<MeshRenderer>().materials[1].color;
         }
     }
+
     // Start is called before the first frame update
     void Start()
     {
-        this.gameObject.transform.parent = droneCams[selectedDrone].transform; //Attach CameraRig to current drone
+        // Attach CameraRig to current drone
+        this.gameObject.transform.parent = droneCams[selectedDrone].transform; 
         this.gameObject.transform.localPosition = Vector3.zero;
-        updateUI();
+
+        // set view outline colors to drone views and labels
+        for (int camIndx = 0; camIndx < camViews.Length; camIndx++) {
+            camViews[camIndx].gameObject.GetComponent<Outline>().effectColor = droneColors[camIndx];
+            droneLabels[camIndx].color = droneColors[camIndx];
+        }
+
+        // Subscribe event listeners
         switchCamLeft.AddOnStateDownListener(TriggerDownLeft, handType);
         switchCamRight.AddOnStateDownListener(TriggerDownRight, handType);
         toggleCameraCanvas.AddOnStateDownListener(ToggleCameraCanvas, handType);
+        updateUI();
     }
 
     // Update is called once per frame
@@ -67,6 +79,7 @@ public class UIManager : MonoBehaviour
 
     public void ToggleCameraCanvas(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
     {
+        pathViewCanvas.SetActive(multiViewCanvas.activeInHierarchy);
         multiViewCanvas.SetActive(!multiViewCanvas.activeInHierarchy);
     }
 
@@ -79,6 +92,8 @@ public class UIManager : MonoBehaviour
         updateUI();
     }
 
+    /**
+    Antiquated code: no longer having only 3/4 views, switching to showing all 4 views regardless
     private void updateUI()
     {
         //update current drone indicator
@@ -98,6 +113,13 @@ public class UIManager : MonoBehaviour
         }
         UpdateDefectWarnings();
     }
+    */
+
+    private void updateUI() 
+    {
+        currentDroneLabel.text = "Drone " + (selectedDrone + 1);
+        UpdateDefectWarnings();
+    }
 
     //Update UI of defect warnings
     public void UpdateDefectWarnings()
@@ -105,14 +127,13 @@ public class UIManager : MonoBehaviour
         bool[] defects = DroneManager.defectWarnings; //record of currently active defects
         for (int n = 0; n < defects.Length; n++)
         {
+            // warnings at index of length - 1 is set to be the one in main view
             if (n == selectedDrone)
             {
-                warnings[0].gameObject.SetActive(defects[n]);
+                warnings[warnings.Length-1].gameObject.SetActive(defects[n]);
             }
-            else
-            {
-                warnings[n > selectedDrone ? n : n + 1].gameObject.SetActive(defects[n]);
-            }
+            // other warnings corespond with their respective indicies
+            warnings[n].gameObject.SetActive(defects[n]);
         }
     }
 }

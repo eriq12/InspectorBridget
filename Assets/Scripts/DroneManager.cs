@@ -5,9 +5,10 @@ using UnityEngine;
 public class DroneManager : MonoBehaviour
 {
     public GameObject[] drones;
-    public Vector3[,] paths = new Vector3[4,20]; //array of input positions
-    public Vector3[,] headings = new Vector3[4, 20]; //array of input headings
-    private int[,] defects = new int[4,20]; //array of input defect flags
+    public Vector3[][] paths = new Vector3[4][]; //array of input positions
+    public LineRenderer[] pathDisplay;
+    public Vector3[][] headings = new Vector3[4][]; //array of input headings
+    private int[][] defects = new int[4][]; //array of input defect flags
     private int[] progress = new int[4]; //array of progress of each drone
     private int[] numPoints = new int[4]; //number of input positions of each drone
     public UIManager ui;
@@ -17,6 +18,7 @@ public class DroneManager : MonoBehaviour
     void Start()
     {
         LoadPath();
+        InitializePathVisual();
     }
 
     // Update is called once per frame
@@ -32,24 +34,54 @@ public class DroneManager : MonoBehaviour
     {
         //read csv
         string[] lines = System.IO.File.ReadAllLines("drone_path.csv");
-        //process each line
-        foreach (string line in lines)
+
+        //read the amount of points per each path
+        string[] metaInput = lines[0].Split(',');
+        for (int pathIndx = 0; pathIndx < paths.Length; pathIndx++)
         {
-            string[] input = line.Split(',');
+            paths[pathIndx] = new Vector3[int.Parse(metaInput[pathIndx])];
+            headings[pathIndx] = new Vector3[int.Parse(metaInput[pathIndx])];
+            defects[pathIndx] = new int[int.Parse(metaInput[pathIndx])];
+        }
+
+        //process each line
+        for (int lineNum = 1; lineNum < lines.Length; lineNum++)
+        {
+            string[] input = lines[lineNum].Split(',');
             int droneNum = int.Parse(input[0]) - 1;
-            paths[droneNum, numPoints[droneNum]] = new Vector3(float.Parse(input[1]), float.Parse(input[2]), float.Parse(input[3]));
-            headings[droneNum, numPoints[droneNum]] = new Vector3(float.Parse(input[4]), float.Parse(input[5]), float.Parse(input[6]));
-            defects[droneNum, numPoints[droneNum]] = int.Parse(input[7]);
+            paths[droneNum][numPoints[droneNum]] = new Vector3(float.Parse(input[1]), float.Parse(input[2]), float.Parse(input[3]));
+            headings[droneNum][numPoints[droneNum]] = new Vector3(float.Parse(input[4]), float.Parse(input[5]), float.Parse(input[6]));
+            defects[droneNum][numPoints[droneNum]] = int.Parse(input[7]);
             numPoints[droneNum]++;
         }
     }
+
+    /**
+     * takes the positions for paths and moves them to 
+     **/
+    void InitializePathVisual()
+    {
+        // path index so conversion to for loop is easier
+        for(int pathIndx = 0; pathIndx < drones.Length; pathIndx++) {
+            // hold positions of the path
+            Vector3[] pathPos = new Vector3[paths[pathIndx].Length];
+            for (int i = 0; i < pathPos.Length; i++)
+            {
+                pathPos[i] = pathDisplay[pathIndx].transform.InverseTransformPoint(paths[pathIndx][i]);
+            }
+            pathDisplay[pathIndx].positionCount = pathPos.Length;
+            Debug.Log(pathPos);
+            pathDisplay[pathIndx].SetPositions(pathPos);
+        }
+    }
+
     //move drone n
     void MoveDrone(int n)
     {
         if (progress[n] < numPoints[n]) // if this drone has not reached the last point
         {
             Vector3 currPos = drones[n].transform.position;
-            drones[n].transform.position = Vector3.MoveTowards(currPos, paths[n, progress[n]], 5 * Time.deltaTime); //move towards next point
+            drones[n].transform.position = Vector3.MoveTowards(currPos, paths[n][progress[n]], 5 * Time.deltaTime); //move towards next point
 
             /*
             Vector3 offset = paths[n, progress[n]] - currPos;
@@ -63,12 +95,12 @@ public class DroneManager : MonoBehaviour
             }
             */
 
-            Vector3 rotation = headings[n, progress[n]] - drones[n].transform.eulerAngles;
+            Vector3 rotation = headings[n][progress[n]] - drones[n].transform.eulerAngles;
             drones[n].transform.Rotate(rotation * Time.deltaTime);
 
-            if (drones[n].transform.position == paths[n, progress[n]])
+            if (drones[n].transform.position == paths[n][progress[n]])
             {
-                if (defects[n, progress[n]] == 0) //no defect found
+                if (defects[n][progress[n]] == 0) //no defect found
                 {
                     progress[n]++;
                 }
