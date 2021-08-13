@@ -1,0 +1,5 @@
+Narrow Pyramids to show direction better
+Add key config to allow for:
+	Accept Defect / pause for inspection
+	Reject Defect
+Find method to better color line gradient based on progress

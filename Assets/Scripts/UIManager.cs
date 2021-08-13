@@ -8,19 +8,21 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     public GameObject[] droneCams;
-    public GameObject multiViewCanvas; // multi-camera canvas
-    public GameObject pathViewCanvas; // standard drone view camera
+    public GameObject multiViewCanvas;                  // multi-camera canvas
+    public GameObject pathViewCanvas;                   // standard drone view camera
     public int selectedDrone = 1;
     public SteamVR_Action_Boolean switchCamLeft;
     public SteamVR_Action_Boolean switchCamRight;
     public SteamVR_Action_Boolean toggleCameraCanvas;
     public SteamVR_Input_Sources handType;
-    public TMP_Text[] droneLabels; // labels for each of the drone views
-    public RawImage[] camViews; // cameras mini-views
-    public Texture[] camTextures; // drone cameras textures
-    private Color[] droneColors; // colors of drones
-    public Image[] warnings; // warning images - current view and 3 mini-views
-    public Text currentDroneLabel; // Text display drone currently in use
+    public TMP_Text[] droneLabels;                      // labels for each of the drone views
+    public RawImage[] camViews;                         // cameras mini-views
+    public Texture[] camTextures;                       // drone cameras textures
+    private Color[] droneColors;                        // colors of drones
+    public Image[] warnings;                            // warning images - current view and 4 mini-views
+    public Image[] stops;                               // stop images - current view and 4 mini-views
+    public Text currentDroneLabel;                      // Text display drone currently in use
+    public DroneManager droneManager;
 
 
     private void Awake()
@@ -124,16 +126,18 @@ public class UIManager : MonoBehaviour
     //Update UI of defect warnings
     public void UpdateDefectWarnings()
     {
-        bool[] defects = DroneManager.defectWarnings; //record of currently active defects
-        for (int n = 0; n < defects.Length; n++)
+        for (int n = 0; n < droneCams.Length; n++)
         {
+            int currStatus = droneManager.GetStatus(n);
             // warnings at index of length - 1 is set to be the one in main view
             if (n == selectedDrone)
             {
-                warnings[warnings.Length-1].gameObject.SetActive(defects[n]);
+                warnings[warnings.Length - 1].gameObject.SetActive((currStatus & 1) != 0);
+                stops[stops.Length - 1].gameObject.SetActive((currStatus & 2) != 0);
             }
             // other warnings corespond with their respective indicies
-            warnings[n].gameObject.SetActive(defects[n]);
+            warnings[n].gameObject.SetActive((currStatus & 1) != 0);
+            stops[n].gameObject.SetActive((currStatus & 2) != 0);
         }
     }
 }

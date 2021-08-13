@@ -5,14 +5,26 @@ using UnityEngine;
 public class DroneManager : MonoBehaviour
 {
     public GameObject[] drones;
-    public Vector3[][] paths = new Vector3[4][]; //array of input positions
     public LineRenderer[] pathDisplay;
-    public Vector3[][] headings = new Vector3[4][]; //array of input headings
-    private int[][] defects = new int[4][]; //array of input defect flags
-    private int[] progress = new int[4]; //array of progress of each drone
-    private int[] numPoints = new int[4]; //number of input positions of each drone
+
+    #region drone path info
+    // -=- desire to depricate in favor of objects to allow for adding points midway
+    public Vector3[][] paths = new Vector3[4][];    // array of input positions
+    public Vector3[][] headings = new Vector3[4][]; // array of input headings
+    private int[][] defects = new int[4][];         // array of input defect flags
+    private int[][] stops = new int[4][];           // array of input stop flags
+    private int[] progress = new int[4];            // array of progress of each drone
+    public int[] status = new int[4];              // array of drone status
+                                                    /** status number meanings:
+                                                     *  0 : Proceed with Path
+                                                     *  1 : Defect Detected
+                                                     *  2 : Planned Stop
+                                                     *  3 : Defect and Planned Stop
+                                                     **/
+    private int[] numPoints = new int[4];           // number of input positions of each drone
+    #endregion
+
     public UIManager ui;
-    public static bool[] defectWarnings = new bool[4]; //keep track of defect warnings for each drone. Can be accessed from other classes
 
     // Start is called before the first frame update
     void Start()
@@ -39,9 +51,11 @@ public class DroneManager : MonoBehaviour
         string[] metaInput = lines[0].Split(',');
         for (int pathIndx = 0; pathIndx < paths.Length; pathIndx++)
         {
-            paths[pathIndx] = new Vector3[int.Parse(metaInput[pathIndx])];
-            headings[pathIndx] = new Vector3[int.Parse(metaInput[pathIndx])];
-            defects[pathIndx] = new int[int.Parse(metaInput[pathIndx])];
+            int amt = int.Parse(metaInput[pathIndx]); // holds the amount of datapoints that should appear per path
+            paths[pathIndx] = new Vector3[amt];
+            headings[pathIndx] = new Vector3[amt];
+            stops[pathIndx] = new int[amt];
+            defects[pathIndx] = new int[amt];
         }
 
         //process each line
@@ -51,7 +65,8 @@ public class DroneManager : MonoBehaviour
             int droneNum = int.Parse(input[0]) - 1;
             paths[droneNum][numPoints[droneNum]] = new Vector3(float.Parse(input[1]), float.Parse(input[2]), float.Parse(input[3]));
             headings[droneNum][numPoints[droneNum]] = new Vector3(float.Parse(input[4]), float.Parse(input[5]), float.Parse(input[6]));
-            defects[droneNum][numPoints[droneNum]] = int.Parse(input[7]);
+            stops[droneNum][numPoints[droneNum]] = int.Parse(input[7]);
+            defects[droneNum][numPoints[droneNum]] = int.Parse(input[8]);
             numPoints[droneNum]++;
         }
     }
@@ -77,10 +92,20 @@ public class DroneManager : MonoBehaviour
         }
     }
 
+    public void ProceedWithPath(int pathNumber)
+    {
+        status[pathNumber] = 0;
+    }
+
+    public int GetStatus(int pathNumber) 
+    {
+        return status[pathNumber];
+    }
+
     //move drone n
     void MoveDrone(int n)
     {
-        if (progress[n] < numPoints[n]) // if this drone has not reached the last point
+        if ((status[n] == 0) && (progress[n] < numPoints[n])) // if this drone does not have any problems/force stops and has not reached the last point
         {
             Vector3 currPos = drones[n].transform.position;
             drones[n].transform.position = Vector3.MoveTowards(currPos, paths[n][progress[n]], 5 * Time.deltaTime); //move towards next point
@@ -102,17 +127,22 @@ public class DroneManager : MonoBehaviour
 
             if (drones[n].transform.position == paths[n][progress[n]])
             {
-                if (defects[n][progress[n]] == 0) //no defect found
-                {
-                    progress[n]++;
-                }
-                else //defect found
+                // check for defects or stops
+                if (defects[n][progress[n]] != 0) // defect found
                 {
                     Debug.Log("drone " + n + " found defect");
-                    defectWarnings[n] = true;
+                    status[n] += 1;
                     //defects[n, progress[n]] = 0;
                     ui.UpdateDefectWarnings();
                 }
+                if (stops[n][progress[n]] != 0) // planned stop
+                {
+                    Debug.Log("planned stop for drone " + n);
+                    status[n] += 2;
+                    //defects[n, progress[n]] = 0;
+                    ui.UpdateDefectWarnings();
+                }
+                progress[n]++; // set the next position
             }
         }
     }
