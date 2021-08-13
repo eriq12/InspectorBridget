@@ -64,13 +64,15 @@ public class DroneManager : MonoBehaviour
         // path index so conversion to for loop is easier
         for(int pathIndx = 0; pathIndx < drones.Length; pathIndx++) {
             // hold positions of the path
-            Vector3[] pathPos = new Vector3[paths[pathIndx].Length];
-            for (int i = 0; i < pathPos.Length; i++)
+            Vector3[] pathPos = new Vector3[paths[pathIndx].Length + 1];
+            pathPos[0] = pathDisplay[pathIndx].transform.InverseTransformPoint(drones[pathIndx].transform.position);
+            for (int i = 1; i < pathPos.Length; i++)
             {
-                pathPos[i] = pathDisplay[pathIndx].transform.InverseTransformPoint(paths[pathIndx][i]);
+                // change the global positions to relative positons (as line renderer uses local positions)
+                pathPos[i] = pathDisplay[pathIndx].transform.InverseTransformPoint(paths[pathIndx][i - 1]);
             }
+            // set length for points to use and set them
             pathDisplay[pathIndx].positionCount = pathPos.Length;
-            Debug.Log(pathPos);
             pathDisplay[pathIndx].SetPositions(pathPos);
         }
     }
