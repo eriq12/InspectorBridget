@@ -153,4 +153,9 @@ public class UIManager : MonoBehaviour
         }
         UpdateViewWarnings();
     }
+
+    public Color GetPathColor(int path)
+    {
+        return droneColors[path];
+    }
 }

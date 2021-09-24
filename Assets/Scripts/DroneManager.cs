@@ -28,8 +28,12 @@ public class DroneManager : MonoBehaviour
     //private float[][] pathPercCumula = new float[4][];      // cumulative 
     private float[] pathProgress = new float[4];            // holds progress as a float from 0 to 1 for each path
     private float travelUnit = 5.0f;                        // decided unit of travel per second
-    [Serializefield]
-    private Color[][] pathVisualColors = new Color[4];
+    // assumes that there are only two colors
+    [SerializeField]
+    private float darkenPercentage = 0.2f;
+    private Gradient[] pathGradients = new Gradient[4];
+    private GradientColorKey[][] pathVisualColors;
+    private GradientAlphaKey[] defaultAlphaKeys;
     #endregion
 
     public UIManager ui;
@@ -37,6 +41,30 @@ public class DroneManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // set alpha keys
+        defaultAlphaKeys = new GradientAlphaKey[1];
+        defaultAlphaKeys[0].alpha = 1.0f;
+        defaultAlphaKeys[0].time = 0.0f;
+
+        // set colors
+        pathVisualColors = new GradientColorKey[4][];
+        for (int path = 0; path < paths.Length; path++)
+        {
+            // initialize array
+            pathVisualColors[path] = new GradientColorKey[2];
+            // get default color
+            pathVisualColors[path][1].color = ui.GetPathColor(path);
+            pathVisualColors[path][1].time = 0.0f;
+            // interpolate
+            pathVisualColors[path][0].color = Vector4.Lerp(pathVisualColors[path][1].color, Color.black, darkenPercentage);
+            pathVisualColors[path][1].time = 0.0f;
+
+            // set gradients and set to Line Renderer
+            pathGradients[path] = new Gradient();
+            pathGradients[path].SetKeys(pathVisualColors[path], defaultAlphaKeys);
+            pathDisplay[path].colorGradient = pathGradients[path];
+        }
+
         LoadPath();
         InitializePathVisual();
     }
@@ -125,6 +153,13 @@ public class DroneManager : MonoBehaviour
     /**
      * updates the designated path
      */
+    void UpdatePathVisual(int path)
+    {
+        pathVisualColors[path][1].time = Mathf.Clamp(pathProgress[path], 0.0f, 1.0f);
+        pathVisualColors[path][0].time = Mathf.Max(0, pathVisualColors[path][1].time - 0.0001f);
+        pathGradients[path].SetKeys(pathVisualColors[path], defaultAlphaKeys);
+        pathDisplay[path].colorGradient = pathGradients[path];
+    }
 
     public void ProceedWithPath(int pathNumber)
     {
@@ -181,6 +216,7 @@ public class DroneManager : MonoBehaviour
             }
             pathProgress[n] += Vector3.Distance(currPos, drones[n].transform.position) / pathLength[n];
             Debug.LogFormat("Drone {0} is {1} of the path completed", n, pathProgress[n]);
+            UpdatePathVisual(n);
         }
     }
 
