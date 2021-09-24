@@ -5,16 +5,16 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637636882790988557
-    m_Hash: 1498365729
+      ticks: 637649044531694661
+    m_Hash: 2131922108
   m_LockFileStatus:
     m_FilePath: D:/Projects/InspectorBridget/Packages/packages-lock.json
     m_PathExists: 1
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637636882791108474
-    m_Hash: 3664637365
+      ticks: 637649044531734632
+    m_Hash: 1633995849
 m_EmbeddedPackageManifests:
   m_ManifestsStatus: {}
 m_PackageAssets:
