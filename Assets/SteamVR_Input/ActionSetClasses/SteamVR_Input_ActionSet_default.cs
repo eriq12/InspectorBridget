@@ -129,6 +129,46 @@ namespace Valve.VR
             }
         }
         
+        public virtual SteamVR_Action_Boolean Accept
+        {
+            get
+            {
+                return SteamVR_Actions.default_Accept;
+            }
+        }
+        
+        public virtual SteamVR_Action_Boolean Deny
+        {
+            get
+            {
+                return SteamVR_Actions.default_Deny;
+            }
+        }
+        
+        public virtual SteamVR_Action_Boolean TogglePathVisual
+        {
+            get
+            {
+                return SteamVR_Actions.default_TogglePathVisual;
+            }
+        }
+        
+        public virtual SteamVR_Action_Boolean StopDrone
+        {
+            get
+            {
+                return SteamVR_Actions.default_StopDrone;
+            }
+        }
+        
+        public virtual SteamVR_Action_Boolean MarkDefect
+        {
+            get
+            {
+                return SteamVR_Actions.default_MarkDefect;
+            }
+        }
+        
         public virtual SteamVR_Action_Vibration Haptic
         {
             get

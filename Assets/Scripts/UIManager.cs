@@ -11,6 +11,7 @@ public class UIManager : MonoBehaviour
     public GameObject[] droneCams;
     public int selectedDrone = 1;
     public DroneManager droneManager;
+    public GameObject pathsParent;                      // parent of Paths to allow for disable/hide from view
 
     // UI Canvases (menus)
     public GameObject multiViewCanvas;                  // multi-camera canvas
@@ -20,6 +21,11 @@ public class UIManager : MonoBehaviour
     public SteamVR_Action_Boolean switchCamLeft;
     public SteamVR_Action_Boolean switchCamRight;
     public SteamVR_Action_Boolean toggleCameraCanvas;
+    public SteamVR_Action_Boolean stopButton;
+    public SteamVR_Action_Boolean markDefectButton;
+    public SteamVR_Action_Boolean accept;
+    public SteamVR_Action_Boolean deny;
+    public SteamVR_Action_Boolean togglePathVis;
     public SteamVR_Input_Sources handType;
 
     // UI Elements
@@ -59,6 +65,9 @@ public class UIManager : MonoBehaviour
         switchCamLeft.AddOnStateDownListener(TriggerDownLeft, handType);
         switchCamRight.AddOnStateDownListener(TriggerDownRight, handType);
         toggleCameraCanvas.AddOnStateDownListener(ToggleCameraCanvas, handType);
+        togglePathVis.AddOnStateDownListener(TogglePathVisual, handType);
+        stopButton.AddOnStateDownListener(PauseDrone, handType);
+        deny.AddOnStateDownListener(Deny, handType);
 
         // update UI
         updateUI();
@@ -92,6 +101,28 @@ public class UIManager : MonoBehaviour
     {
         pathViewCanvas.SetActive(multiViewCanvas.activeInHierarchy);
         multiViewCanvas.SetActive(!multiViewCanvas.activeInHierarchy);
+    }
+
+    public void TogglePathVisual(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    {
+        pathsParent.SetActive(!pathsParent.activeInHierarchy);
+    }
+
+    public void PauseDrone(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    {
+        droneManager.StopPath(selectedDrone);
+    }
+
+    public void Deny(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource)
+    {
+        if (droneManager.IsCheckDefect(selectedDrone))
+        {
+            droneManager.ClearDefect(selectedDrone);
+        }
+        else
+        {
+            droneManager.ProceedWithPath(selectedDrone);
+        }
     }
 
     //Switch view to drone n

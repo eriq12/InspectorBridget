@@ -18,14 +18,18 @@ public class DroneManager : MonoBehaviour
                                                             /** status number meanings:
                                                              *  0 : Proceed with Path
                                                              *  1 : Defect Detected
-                                                             *  2 : Planned Stop
-                                                             *  3 : Defect and Planned Stop
+                                                             *  2 : Stop
+                                                             *  3 : Defect and Stop
                                                              **/
     private int[] numPoints = new int[4];                   // number of input positions of each drone
+    [SerializeField]
+    private int numVisualPoints;                            // number of points on drone path visual
     // for determining path progress
     private float[] pathLength = new float[4];              // full distance of path lengths
-    //private float[][] pathPercPartial = new float[4][];     // partial percentages, should sum to one
-    //private float[][] pathPercCumula = new float[4][];      // cumulative 
+    [SerializeField]
+    private float[][] pathPercPartial = new float[4][];     // partial percentages, should sum to one
+    [SerializeField]
+    private float[][] pathPercCumula = new float[4][];      // cumulative 
     private float[] pathProgress = new float[4];            // holds progress as a float from 0 to 1 for each path
     private float travelUnit = 5.0f;                        // decided unit of travel per second
     // assumes that there are only two colors
@@ -95,7 +99,7 @@ public class DroneManager : MonoBehaviour
         }
 
         // add starting points
-        for(int pthIdx = 0; pthIdx < paths.Length; pthIdx++)
+        for (int pthIdx = 0; pthIdx < paths.Length; pthIdx++)
         {
             paths[pthIdx][0] = drones[pthIdx].transform.position;
             headings[pthIdx][0] = drones[pthIdx].transform.eulerAngles;
@@ -116,19 +120,34 @@ public class DroneManager : MonoBehaviour
             numPoints[droneNum]++;
         }
 
-        // calculate lengths for each line
+        // calculate lengths and progress for each line
         for (int pathIndx = 0; pathIndx < drones.Length; pathIndx++)
         {
-            for(int pointIndx = 1; pointIndx < paths[pathIndx].Length; pointIndx++)
+            pathPercPartial[pathIndx] = new float[paths[pathIndx].Length];
+            pathPercCumula[pathIndx] = new float[paths[pathIndx].Length];
+            for (int pointIndx = 1; pointIndx < paths[pathIndx].Length; pointIndx++)
             {
                 if (paths[pathIndx][pointIndx] == null)
                 {
                     break;
                 }
-                pathLength[pathIndx] += Vector3.Distance(paths[pathIndx][pointIndx], paths[pathIndx][pointIndx - 1]);
+                // get the lengths
+                pathPercPartial[pathIndx][pointIndx] = Vector3.Distance(paths[pathIndx][pointIndx], paths[pathIndx][pointIndx - 1]);
+                pathLength[pathIndx] += pathPercPartial[pathIndx][pointIndx];
+                pathPercCumula[pathIndx][pointIndx] = pathLength[pathIndx];
+            }
+        }
+        for (int pathIndx = 0; pathIndx < drones.Length; pathIndx++)
+        {
+            for (int pointIndx = 1; pointIndx < paths[pathIndx].Length; pointIndx++)
+            {
+                pathPercPartial[pathIndx][pointIndx] /= pathLength[pathIndx];
+                pathPercCumula[pathIndx][pointIndx] /= pathLength[pathIndx];
             }
         }
     }
+
+    #region path visual methods
 
     /**
      * takes the positions for paths and moves them to 
@@ -144,9 +163,25 @@ public class DroneManager : MonoBehaviour
                 // change the global positions to relative positons (as line renderer uses local positions)
                 pathPos[i] = pathDisplay[pathIndx].transform.InverseTransformPoint(paths[pathIndx][i]);
             }
+            Vector3[] pathVisPos = new Vector3[numVisualPoints];
+            float step = 1.0f / pathVisPos.Length;
+            int pointIndx = -1;
+            float progress = 0;
+            for(int i = 0; i < pathVisPos.Length; i++, progress += step)
+            {
+                if (progress >= pathPercCumula[pathIndx][pointIndx + 1])
+                {
+                    pathVisPos[i] = pathPos[++pointIndx];
+                }
+                else
+                {
+                    float percOfSegment = Mathf.InverseLerp(pathPercCumula[pathIndx][pointIndx], pathPercCumula[pathIndx][pointIndx + 1], progress);
+                    pathVisPos[i] = Vector3.Lerp(pathPos[pointIndx], pathPos[pointIndx + 1], percOfSegment);
+                }
+            }
             // set length for points to use and set them
-            pathDisplay[pathIndx].positionCount = pathPos.Length;
-            pathDisplay[pathIndx].SetPositions(pathPos);
+            pathDisplay[pathIndx].positionCount = pathVisPos.Length;
+            pathDisplay[pathIndx].SetPositions(pathVisPos);
         }
     }
 
@@ -161,15 +196,55 @@ public class DroneManager : MonoBehaviour
         pathDisplay[path].colorGradient = pathGradients[path];
     }
 
+    #endregion
+
+    #region drone flight control helpers
+
+    public void StopPath(int pathNumber)
+    {
+        status[pathNumber] |= 2;
+        ui.UpdateCamWarnings();
+    }
+
+    public void StartMarkingDefect(int pathNumber)
+    {
+        status[pathNumber] |= 1;
+        ui.UpdateCamWarnings();
+    }
+
+    public void ClearDefect(int pathNumber)
+    {
+        status[pathNumber] &= ~1;
+        ui.UpdateCamWarnings();
+    }
+
     public void ProceedWithPath(int pathNumber)
     {
         status[pathNumber] = 0;
+        ui.UpdateCamWarnings();
     }
 
+    #endregion
+
+    #region status helpers
+    // these methods return status (either full or specific partial)
+    // doing != 0 as doing Convert.ToBoolean() method will likely take more computation to perform
     public int GetStatus(int pathNumber) 
     {
         return status[pathNumber];
     }
+
+    public bool IsStopped(int pathNumber)
+    {
+        return (status[pathNumber] & 2) != 0;
+    }
+
+    public bool IsCheckDefect(int pathNumber)
+    {
+        return (status[pathNumber] & 1) != 0;
+    }
+
+    #endregion
 
     //move drone n
     void MoveDrone(int n)
@@ -201,16 +276,14 @@ public class DroneManager : MonoBehaviour
                 if (defects[n][progress[n]] != 0) // defect found
                 {
                     Debug.Log("drone " + n + " found defect");
-                    status[n] += 1;
+                    StartMarkingDefect(n);
                     //defects[n, progress[n]] = 0;
-                    ui.UpdateViewWarnings();
                 }
                 if (stops[n][progress[n]] != 0) // planned stop
                 {
                     Debug.Log("planned stop for drone " + n);
-                    status[n] += 2;
+                    StopPath(n);
                     //defects[n, progress[n]] = 0;
-                    ui.UpdateViewWarnings();
                 }
                 progress[n]++; // set the next position
             }

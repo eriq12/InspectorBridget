@@ -59,7 +59,32 @@
     },
     {
       "name": "/actions/default/in/ToggleCamCanvas",
+      "type": "boolean",
+      "requirement": "mandatory"
+    },
+    {
+      "name": "/actions/default/in/Accept",
+      "type": "boolean",
+      "requirement": "mandatory"
+    },
+    {
+      "name": "/actions/default/in/Deny",
+      "type": "boolean",
+      "requirement": "mandatory"
+    },
+    {
+      "name": "/actions/default/in/TogglePathVisual",
       "type": "boolean"
+    },
+    {
+      "name": "/actions/default/in/StopDrone",
+      "type": "boolean",
+      "requirement": "mandatory"
+    },
+    {
+      "name": "/actions/default/in/MarkDefect",
+      "type": "boolean",
+      "requirement": "mandatory"
     },
     {
       "name": "/actions/default/out/Haptic",

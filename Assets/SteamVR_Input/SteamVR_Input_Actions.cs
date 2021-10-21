@@ -45,6 +45,16 @@ namespace Valve.VR
         
         private static SteamVR_Action_Boolean p_default_ToggleCamCanvas;
         
+        private static SteamVR_Action_Boolean p_default_Accept;
+        
+        private static SteamVR_Action_Boolean p_default_Deny;
+        
+        private static SteamVR_Action_Boolean p_default_TogglePathVisual;
+        
+        private static SteamVR_Action_Boolean p_default_StopDrone;
+        
+        private static SteamVR_Action_Boolean p_default_MarkDefect;
+        
         private static SteamVR_Action_Vibration p_default_Haptic;
         
         private static SteamVR_Action_Vector2 p_platformer_Move;
@@ -173,6 +183,46 @@ namespace Valve.VR
             }
         }
         
+        public static SteamVR_Action_Boolean default_Accept
+        {
+            get
+            {
+                return SteamVR_Actions.p_default_Accept.GetCopy<SteamVR_Action_Boolean>();
+            }
+        }
+        
+        public static SteamVR_Action_Boolean default_Deny
+        {
+            get
+            {
+                return SteamVR_Actions.p_default_Deny.GetCopy<SteamVR_Action_Boolean>();
+            }
+        }
+        
+        public static SteamVR_Action_Boolean default_TogglePathVisual
+        {
+            get
+            {
+                return SteamVR_Actions.p_default_TogglePathVisual.GetCopy<SteamVR_Action_Boolean>();
+            }
+        }
+        
+        public static SteamVR_Action_Boolean default_StopDrone
+        {
+            get
+            {
+                return SteamVR_Actions.p_default_StopDrone.GetCopy<SteamVR_Action_Boolean>();
+            }
+        }
+        
+        public static SteamVR_Action_Boolean default_MarkDefect
+        {
+            get
+            {
+                return SteamVR_Actions.p_default_MarkDefect.GetCopy<SteamVR_Action_Boolean>();
+            }
+        }
+        
         public static SteamVR_Action_Vibration default_Haptic
         {
             get
@@ -254,6 +304,11 @@ namespace Valve.VR
                     SteamVR_Actions.default_SwitchCamLeft,
                     SteamVR_Actions.default_SwitchCamRight,
                     SteamVR_Actions.default_ToggleCamCanvas,
+                    SteamVR_Actions.default_Accept,
+                    SteamVR_Actions.default_Deny,
+                    SteamVR_Actions.default_TogglePathVisual,
+                    SteamVR_Actions.default_StopDrone,
+                    SteamVR_Actions.default_MarkDefect,
                     SteamVR_Actions.default_Haptic,
                     SteamVR_Actions.platformer_Move,
                     SteamVR_Actions.platformer_Jump,
@@ -277,6 +332,11 @@ namespace Valve.VR
                     SteamVR_Actions.default_SwitchCamLeft,
                     SteamVR_Actions.default_SwitchCamRight,
                     SteamVR_Actions.default_ToggleCamCanvas,
+                    SteamVR_Actions.default_Accept,
+                    SteamVR_Actions.default_Deny,
+                    SteamVR_Actions.default_TogglePathVisual,
+                    SteamVR_Actions.default_StopDrone,
+                    SteamVR_Actions.default_MarkDefect,
                     SteamVR_Actions.platformer_Move,
                     SteamVR_Actions.platformer_Jump,
                     SteamVR_Actions.buggy_Steering,
@@ -302,6 +362,11 @@ namespace Valve.VR
                     SteamVR_Actions.default_SwitchCamLeft,
                     SteamVR_Actions.default_SwitchCamRight,
                     SteamVR_Actions.default_ToggleCamCanvas,
+                    SteamVR_Actions.default_Accept,
+                    SteamVR_Actions.default_Deny,
+                    SteamVR_Actions.default_TogglePathVisual,
+                    SteamVR_Actions.default_StopDrone,
+                    SteamVR_Actions.default_MarkDefect,
                     SteamVR_Actions.platformer_Jump,
                     SteamVR_Actions.buggy_Brake,
                     SteamVR_Actions.buggy_Reset};
@@ -327,6 +392,11 @@ namespace Valve.VR
                     SteamVR_Actions.default_SwitchCamLeft,
                     SteamVR_Actions.default_SwitchCamRight,
                     SteamVR_Actions.default_ToggleCamCanvas,
+                    SteamVR_Actions.default_Accept,
+                    SteamVR_Actions.default_Deny,
+                    SteamVR_Actions.default_TogglePathVisual,
+                    SteamVR_Actions.default_StopDrone,
+                    SteamVR_Actions.default_MarkDefect,
                     SteamVR_Actions.platformer_Move,
                     SteamVR_Actions.platformer_Jump,
                     SteamVR_Actions.buggy_Steering,
@@ -351,6 +421,11 @@ namespace Valve.VR
             SteamVR_Actions.p_default_SwitchCamLeft = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/default/in/SwitchCamLeft")));
             SteamVR_Actions.p_default_SwitchCamRight = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/default/in/SwitchCamRight")));
             SteamVR_Actions.p_default_ToggleCamCanvas = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/default/in/ToggleCamCanvas")));
+            SteamVR_Actions.p_default_Accept = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/default/in/Accept")));
+            SteamVR_Actions.p_default_Deny = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/default/in/Deny")));
+            SteamVR_Actions.p_default_TogglePathVisual = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/default/in/TogglePathVisual")));
+            SteamVR_Actions.p_default_StopDrone = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/default/in/StopDrone")));
+            SteamVR_Actions.p_default_MarkDefect = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/default/in/MarkDefect")));
             SteamVR_Actions.p_default_Haptic = ((SteamVR_Action_Vibration)(SteamVR_Action.Create<SteamVR_Action_Vibration>("/actions/default/out/Haptic")));
             SteamVR_Actions.p_platformer_Move = ((SteamVR_Action_Vector2)(SteamVR_Action.Create<SteamVR_Action_Vector2>("/actions/platformer/in/Move")));
             SteamVR_Actions.p_platformer_Jump = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/platformer/in/Jump")));
